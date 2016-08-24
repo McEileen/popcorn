@@ -13,8 +13,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.*;
+import static org.junit.Assert.*;
+import static io.restassured.matcher.RestAssuredMatchers.*;
 import static org.hamcrest.Matchers.*;
 
 @RunWith(SpringRunner.class)
@@ -28,14 +29,13 @@ public class StudioControllerTest {
 
     @After
     public void tearDown() throws Exception {
-
     }
 
     @Test
     // GET /api/studios
-    public void index() throws Exception {
-        given().log().all().and().given()
-                .get("/api/studios")
+    public void shouldGetAllStudiosOnPage0() throws Exception {
+        given().log().all().and().given().
+                get("/api/studios")
                 .then().log().all()
                 .statusCode(200)
                 .body(
@@ -47,12 +47,11 @@ public class StudioControllerTest {
                 );
     }
 
-
     @Test
-    // GET /api/studios
-    public void shouldShowPage1() throws Exception {
-        given().log().all().and().given()
-                .get("/api/studios?page=1")
+    // GET /api/studios?page=1
+    public void shouldGetAllStudiosOnPage1() throws Exception {
+        given().log().all().and().given().
+                get("/api/studios?page=1")
                 .then().log().all()
                 .statusCode(200)
                 .body(
@@ -65,22 +64,65 @@ public class StudioControllerTest {
     }
 
     @Test
+    // GET /api/studios/1
+    public void shouldGetStudioById() throws Exception {
+        given().log().all().and().given().
+                get("/api/studios/1")
+                .then().log().all()
+                .statusCode(200)
+                .body(
+                        "name", equalTo("MGM")
+                );
+    }
+
+    @Test
     // POST /api/studios
-    public void shouldCreateStudio() throws Exception {
-        Map<String, String> json = new HashMap<>();
+    public void shouldCreateNewStudio() throws Exception {
+        Map<String, Object> json = new HashMap<>();
         json.put("name", "Sony");
         json.put("est", "1985-01-16");
 
-        given().log().all().and().given()
-                .contentType(ContentType.JSON)
-                .body(json)
-                .post("/api/studios")
+        given().log().all().and().given().
+                contentType(ContentType.JSON).
+                body(json).
+                post("/api/studios")
                 .then().log().all()
                 .statusCode(200)
                 .body(
                         "name", equalTo("Sony"),
                         "id", is(6),
-                        "version", is(0)
+                        "version", is(0),
+                        "createdAt", greaterThan(1L),
+                        "updatedAt", greaterThan(1L)
+                );
+    }
+
+    @Test
+    // DELETE /api/studios/:id
+    public void shouldDeleteStudio() throws Exception {
+        given().log().all().and().given().
+                delete("/api/studios/3")
+                .then().log().all()
+                .statusCode(200);
+    }
+
+    @Test
+    // PUT /api/studios/:id
+    public void shouldUpdateStudio() throws Exception {
+        Map<String, Object> json = new HashMap<>();
+        json.put("name", "MGM 1");
+        json.put("est", "2001-01-05");
+
+        given().log().all().and().given().
+                contentType(ContentType.JSON).
+                body(json).
+                put("/api/studios/1")
+                .then().log().all()
+                .statusCode(200)
+                .body(
+                        "name", equalTo("MGM 1"),
+                        "version", is(1),
+                        "est", is(978652800000L)
                 );
     }
 }

@@ -1,5 +1,6 @@
 package com.tmem.services;
 
+import com.tmem.entities.Movie;
 import com.tmem.entities.Studio;
 import com.tmem.repositories.IStudioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,11 @@ public class StudioService {
     public Page<Studio> findAll(int page) {
         PageRequest pr = new PageRequest(page, 3);
         return this.repository.findAll(pr);
+    }
+
+    public Page<Movie> findAllMoviesByStudioId(int id, int page) {
+        PageRequest pr = new PageRequest(page, 3);
+        return this.repository.findAllMoviesByStudioId(id, pr);
     }
 
     public Studio findOne(int id) {
